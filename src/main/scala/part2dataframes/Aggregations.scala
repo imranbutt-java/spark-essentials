@@ -43,11 +43,13 @@ object Aggregations extends App {
   // data science
   moviesDF.select(
     mean(col("Rotten_Tomatoes_Rating")),
+    //Standard Deviation: how far or close to the mean value
     stddev(col("Rotten_Tomatoes_Rating"))
   )
 
   // Grouping
 
+  // see groupBy returns RelationalGroupedDataset
   val countByGenreDF = moviesDF
     .groupBy(col("Major_Genre")) // includes null
     .count()  // select count(*) from moviesDF group by Major_Genre
