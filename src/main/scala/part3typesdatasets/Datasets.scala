@@ -59,7 +59,12 @@ object Datasets extends App {
 
   // map, flatMap, fold, reduce, for comprehensions ...
   val carNamesDS = carsDS.map(car => car.Name.toUpperCase())
+  // Dataframe is not dealing with the types that is why car below(won't compile) is Row and above Datasets.Car
+  // val carNamesDF = carsDF.map(car => car.Name.toUpperCase())
 
+  // NOTE: Datasets are cost effective, bcz spark has to apply on each row type and filter operation to have
+  // the scala object and than perform operation.
+  // RESULT: If type is important us Dataset but for better performance still use Dataframe
   /**
     * Exercises
     *
