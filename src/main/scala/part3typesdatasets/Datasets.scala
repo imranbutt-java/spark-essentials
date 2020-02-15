@@ -49,6 +49,9 @@ object Datasets extends App {
   // 3 - define an encoder (importing the implicits)
   import spark.implicits._
   // 4 - convert the DF to DS
+  // If we don't import spark implicit, we have to import Product Encoder, means Ecoding class that extends Products
+  // and case class already extends from Product but we may use spark.implicits._
+  // implicit val carEncoder = Encoders.product[Car]
   val carsDS = carsDF.as[Car]
 
   // DS collection functions
