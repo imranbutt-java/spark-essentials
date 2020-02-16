@@ -28,15 +28,15 @@ object Datasets extends App {
   // dataset of a complex type
   // 1 - define your case class
   case class Car(
-                Name: String,
-                Miles_per_Gallon: Option[Double],
-                Cylinders: Long,
-                Displacement: Double,
-                Horsepower: Option[Long],
-                Weight_in_lbs: Long,
-                Acceleration: Double,
-                Year: Date,
-                Origin: String
+                  Name: String,
+                  Miles_per_Gallon: Option[Double],
+                  Cylinders: Long,
+                  Displacement: Double,
+                  Horsepower: Option[Long],
+                  Weight_in_lbs: Long,
+                  Acceleration: Double,
+                  Year: String,
+                  Origin: String
                 )
 
   // 2 - read the DF from the file
@@ -88,6 +88,8 @@ object Datasets extends App {
 
 
   // Joins
+  // NOTE: Initially id is kept as Int, but when we say "inferschema" "true", spark would consider all numbers
+  // as Long that is bigint.
   case class Guitar(id: Long, make: String, model: String, guitarType: String)
   case class GuitarPlayer(id: Long, name: String, guitars: Seq[Long], band: Long)
   case class Band(id: Long, name: String, hometown: String, year: Long)
@@ -96,7 +98,11 @@ object Datasets extends App {
   val guitarPlayersDS = readDF("guitarPlayers.json").as[GuitarPlayer]
   val bandsDS = readDF("bands.json").as[Band]
 
-  val guitarPlayerBandsDS: Dataset[(GuitarPlayer, Band)] = guitarPlayersDS.joinWith(bandsDS, guitarPlayersDS.col("band") === bandsDS.col("id"), "inner")
+  // If we use "join" method we would lose type information and we would get dataframe instead of dataset
+  // to keep the type information, we should use "joinwith"
+  val guitarPlayerBandsDS: Dataset[(GuitarPlayer, Band)] = guitarPlayersDS.joinWith(bandsDS,
+    guitarPlayersDS.col("band") === bandsDS.col("id"),
+    "inner")
 
   /**
     * Exercise: join the guitarsDS and guitarPlayersDS, in an outer join
@@ -105,7 +111,7 @@ object Datasets extends App {
 
   guitarPlayersDS
     .joinWith(guitarsDS, array_contains(guitarPlayersDS.col("guitars"), guitarsDS.col("id")), "outer")
-    .show()
+    .show(false)
 
   // Grouping DS
 
