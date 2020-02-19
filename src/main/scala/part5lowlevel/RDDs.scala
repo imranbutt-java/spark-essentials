@@ -1,6 +1,7 @@
 package part5lowlevel
 
-import org.apache.spark.sql.{SaveMode, SparkSession}
+import org.apache.spark.rdd.RDD
+import org.apache.spark.sql.{Row, SaveMode, SparkSession}
 import org.apache.spark.sql.functions._
 
 import scala.io.Source
@@ -17,11 +18,11 @@ object RDDs extends App {
 
   // 1 - parallelize an existing collection
   val numbers = 1 to 1000000
-  val numbersRDD = sc.parallelize(numbers)
+  val numbersRDD: RDD[Int] = sc.parallelize(numbers)
 
   // 2 - reading from files
   case class StockValue(symbol: String, date: String, price: Double)
-  def readStocks(filename: String) =
+  def readStocks(filename: String): List[StockValue] =
     Source.fromFile(filename)
       .getLines()
       .drop(1)
@@ -34,7 +35,7 @@ object RDDs extends App {
   // 2b - reading from files
   val stocksRDD2 = sc.textFile("src/main/resources/data/stocks.csv")
     .map(line => line.split(","))
-    .filter(tokens => tokens(0).toUpperCase() == tokens(0))
+    .filter(tokens => tokens(0).toUpperCase() == tokens(0)) //This condition to avoid header
     .map(tokens => StockValue(tokens(0), tokens(1), tokens(2).toDouble))
 
   // 3 - read from a DF
@@ -45,7 +46,9 @@ object RDDs extends App {
 
   import spark.implicits._
   val stocksDS = stocksDF.as[StockValue]
-  val stocksRDD3 = stocksDS.rdd
+  // Note here the difference of creating rdd from dataset and dataframe
+  val stocksRDD3: RDD[StockValue] = stocksDS.rdd
+  val stocksRDD4: RDD[Row] = stocksDF.rdd
 
   // RDD -> DF
   val numbersDF = numbersRDD.toDF("numbers") // you lose the type info
@@ -65,6 +68,17 @@ object RDDs extends App {
   // min and max
   implicit val stockOrdering: Ordering[StockValue] =
     Ordering.fromLessThan[StockValue]((sa: StockValue, sb: StockValue) => sa.price < sb.price)
+  /*
+  If we won't use implicit, compiler would complain
+  - We have to provide implicit, but it won't be able to understand "price" type
+  - We need to provide either Type Specifier, e.g.
+    stockOrdering: Ordering[StockValue]
+    Or
+    fromLessThan[StockValue]
+    Or
+    in function arguments as
+    ((sa: StockValue, sb: StockValue)
+   */
   val minMsft = msftRDD.min() // action
 
   // reduce
@@ -74,6 +88,7 @@ object RDDs extends App {
   val groupedStocksRDD = stocksRDD.groupBy(_.symbol)
   // ^^ very expensive
 
+  // RDD has the capabilities to let it know, how we want partitioning.
   // Partitioning
 
   val repartitionedStocksRDD = stocksRDD.repartition(30)

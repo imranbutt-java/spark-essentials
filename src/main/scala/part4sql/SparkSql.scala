@@ -30,6 +30,7 @@ object SparkSql extends App {
   spark.sql("create database rtjvm")
   spark.sql("use rtjvm")
   val databasesDF = spark.sql("show databases")
+  databasesDF.show()
 
   // transfer tables from a DB to Spark tables
   val driver = "org.postgresql.Driver"
