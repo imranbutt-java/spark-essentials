@@ -90,7 +90,7 @@ object RDDs extends App {
 
   // RDD has the capabilities to let it know, how we want partitioning.
   // Partitioning
-
+  // If narrow down partition better to use coalesce as it never performs shuffling
   val repartitionedStocksRDD = stocksRDD.repartition(30)
   repartitionedStocksRDD.toDF.write
     .mode(SaveMode.Overwrite)
@@ -134,6 +134,10 @@ object RDDs extends App {
 
   // 3
   val goodDramasRDD = moviesRDD.filter(movie => movie.genre == "Drama" && movie.rating > 6)
+
+  moviesRDD.toDF.show(false)
+  genresRDD.toDF.show(false)
+  goodDramasRDD.toDF.show(false)
 
   // 4
   case class GenreAvgRating(genre: String, rating: Double)
