@@ -11,7 +11,7 @@ object TaxiApplication extends App {
     .getOrCreate()
   import spark.implicits._
 
-  val bigTaxiDF = spark.read.load("path/to/your/dataset/NYC_taxi_2009-2016.parquet")
+//  val bigTaxiDF = spark.read.load("path/to/your/dataset/NYC_taxi_2009-2016.parquet")
 
   val taxiDF = spark.read.load("src/main/resources/data/yellow_taxi_jan_25_2018")
   taxiDF.printSchema()
